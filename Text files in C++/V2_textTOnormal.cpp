@@ -3,53 +3,60 @@
 #include <string>
 using namespace std;
 
-int main() {
+int main()
+{
+    string charset;
+    for (int i = 35; i <= 126; i++)
+        charset += char(i);
+
     string outputFile;
-    cout << "Enter output binary file name: ";
+    cout << "Enter output file name: ";
     getline(cin >> ws, outputFile);
 
+    int numFiles;
+    cout << "Enter number of text files: ";
+    cin >> numFiles;
+
     ofstream output(outputFile, ios::binary);
-    if (!output) {
-        cerr << "Cannot open output file.\n";
+    if (!output)
+    {
+        cout << "Error creating output file.\n";
         return 1;
     }
 
-    string charset = "GHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()-_=+[{]};:',<.>/?|";
-    size_t base = charset.size();
+    for (int i = 1; i <= numFiles; i++)
+    {
+        ifstream input(to_string(i) + ".txt", ios::binary);
+        if (!input)
+        {
+            cout << "Error opening file " << i << ".txt\n";
+            return 1;
+        }
 
-    int fileIndex = 1;
+        char c1, c2;
 
-    while (true) {
-        string inputFile = to_string(fileIndex) + ".txt";
-        ifstream input(inputFile, ios::binary);
-        if (!input) break; // no more files
+        while (input.read(&c1, 1) && input.read(&c2, 1))
+        {
+            int q = charset.find(c1);
+            int r = charset.find(c2);
 
-        char ch;
-        while (input.get(ch)) {
-            unsigned char byte;
-            size_t idx = charset.find(ch);
-
-            if (idx != string::npos) {
-                // Single-character mapping
-                byte = (unsigned char)idx;
-            } else {
-                // Hex sequence (two characters)
-                char ch2;
-                if (!input.get(ch2)) break; // unexpected EOF
-                string hex;
-                hex += ch;
-                hex += ch2;
-                byte = (unsigned char)stoi(hex, nullptr, 16);
+            if (q == string::npos || r == string::npos)
+            {
+                cout << "Invalid character in encoded file.\n";
+                return 1;
             }
 
-            output.put(byte);
+            unsigned char uch = q * 92 + r;
+            char ch = static_cast<char>(uch);
+
+            output.write(&ch, 1);
         }
 
         input.close();
-        fileIndex++;
     }
 
     output.close();
-    cout << "Decoding complete! Output saved as " << outputFile << "\n";
+
+    cout << "Decoding complete.\n";
     return 0;
 }
