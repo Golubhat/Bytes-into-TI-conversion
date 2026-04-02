@@ -19,7 +19,7 @@ int main()
     output.open("1.txt", ios::out | ios::binary);
     for (i = 1; i <= totalSize; i++)
     {
-        if (textLimit++ < 536870911) // 536870911*2 is the Maximum Readable Limit by Notepad
+        if (textLimit++ < 1024 * 1024) // 1 MB
         {
             input.read((char *)&ch, sizeof(ch));
             code[0] = (ch / 26) + 97;
