@@ -3,53 +3,59 @@
 #include <string>
 using namespace std;
 
-int main() {
-    string inputFile;
-    cout << "Enter input file name: ";
-    getline(cin >> ws, inputFile);
+int main()
+{
+    string charset;
+    for (int i = 35; i <= 126; i++) // 92 characters
+        charset += char(i);
 
-    ifstream input(inputFile, ios::binary);
-    if (!input) {
-        cerr << "Cannot open input file.\n";
+    string fileName;
+    cout << "Enter input file name: ";
+    getline(cin >> ws, fileName);
+
+    ifstream input(fileName, ios::binary);
+    if (!input)
+    {
+        cout << "Error opening input file.\n";
         return 1;
     }
 
-    string charset = "GHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()-_=+[{]};:',<.>/?|";
-    size_t base = charset.size();
-    long long maxFileSize = 1073741822;
-
     int fileIndex = 1;
     ofstream output(to_string(fileIndex) + ".txt", ios::binary);
-    long long currentSize = 0;
 
-    unsigned char byte;
-    while (input.read((char*)&byte, 1)) {
-        string code;
+    const size_t LIMIT = 1024 * 1024; // 1 MB
+    size_t textSize = 0;
 
-        if (byte < base) {
-            // Single-character encoding
-            code += charset[byte];
-        } else {
-            // Two-character hex encoding
-            char buf[3];
-            sprintf(buf, "%02X", byte);
-            code = buf;
-        }
+    char ch;
+    while (input.read(&ch, 1))
+    {
+        unsigned char uch = static_cast<unsigned char>(ch);
 
-        // Check file size
-        if (currentSize + code.size() > maxFileSize) {
+        // Split into quotient and remainder (base-92)
+        unsigned char q = uch / 92;
+        unsigned char r = uch % 92;
+
+        char c1 = charset[q];
+        char c2 = charset[r];
+
+        // Write two characters
+        output.write(&c1, 1);
+        output.write(&c2, 1);
+
+        textSize += 2;
+
+        // Split file if exceeds limit
+        if (textSize >= LIMIT)
+        {
             output.close();
-            fileIndex++;
-            output.open(to_string(fileIndex) + ".txt", ios::binary);
-            currentSize = 0;
+            output.open(to_string(++fileIndex) + ".txt", ios::binary);
+            textSize = 0;
         }
-
-        output.write(code.c_str(), code.size());
-        currentSize += code.size();
     }
 
-    output.close();
     input.close();
-    cout << "Encoding complete! Files written sequentially.\n";
+    output.close();
+
+    cout << "Encoding complete. Files created: " << fileIndex << endl;
     return 0;
 }
