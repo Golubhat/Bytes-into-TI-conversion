@@ -1,2 +1,5 @@
-# Bytes-into-IVT-conversion
-The conversion of normal file Bytes into "BGR values of images", "7-color values of frames in video" or "printable characters in text files" (and vica-versa) can be done
+# Bytes-into-TI-conversion
+The conversion of normal file Bytes into "BGR values of images" or "printable characters in text files" (and vica-versa) can be done.
+
+# Note
+With the help of “bonus programs”, Bytes can be stored in Audio or Video file.
